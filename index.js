@@ -2,22 +2,21 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Telegraf } = require('telegraf');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 
 // ---------- Config ----------
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const KNOWLEDGE_FILE = path.join(__dirname, 'knowledge.md');
-const GEMINI_MODEL = 'gemini-2.0-flash'; // fast + cheap, good enough for FAQ answering
+const GROQ_MODEL = 'llama-3.3-70b-versatile'; // generous free tier, good quality for FAQ answering
 
-if (!BOT_TOKEN || !GEMINI_API_KEY) {
-  console.error('Missing TELEGRAM_BOT_TOKEN or GEMINI_API_KEY in .env');
+if (!BOT_TOKEN || !GROQ_API_KEY) {
+  console.error('Missing TELEGRAM_BOT_TOKEN or GROQ_API_KEY in .env');
   process.exit(1);
 }
 
 const bot = new Telegraf(BOT_TOKEN);
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+const groq = new Groq({ apiKey: GROQ_API_KEY });
 
 // ---------- Tiny HTTP server ----------
 // Free hosts like Render need something listening on a port to consider
@@ -50,7 +49,7 @@ function loadKnowledge() {
 async function answerQuestion(question) {
   const knowledge = loadKnowledge();
 
-  const prompt = `You are a helpful support assistant for a Telegram group. Answer the user's question using ONLY the information in the knowledge base below.
+  const systemPrompt = `You are a helpful support assistant for a Telegram group. Answer the user's question using ONLY the information in the knowledge base below.
 
 Rules:
 - If the answer is in the knowledge base, answer clearly and concisely (a few sentences, or short steps for troubleshooting).
@@ -61,12 +60,17 @@ Rules:
 KNOWLEDGE BASE:
 """
 ${knowledge}
-"""
+"""`;
 
-QUESTION: ${question}`;
+  const completion = await groq.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: question },
+    ],
+  });
 
-  const result = await model.generateContent(prompt);
-  return result.response.text().trim();
+  return completion.choices[0].message.content.trim();
 }
 
 // ---------- Command handling ----------
