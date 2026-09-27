@@ -5,6 +5,29 @@ changes take effect on the next question, no restart needed.
 
 ---
 
+## Quick Index (match the symptom, then read that section)
+
+- Song won't play / stuck / streaming errors → **Playback Issues**
+- Too quiet, no sound, second volume slider → **Volume & Audio**
+- Auto-skipping, repeat stuck, crossfade glitches → **Skipping, Repeat & Shuffle**
+- Can't reorder queue, "add to queue" does nothing → **Queue & Playlists**
+- Downloads stuck/cancel themselves, missing cover art offline → **Downloads**
+- Wrong/missing/out-of-sync lyrics, laggy or glitchy lyrics, weird
+  characters in lyrics → **Lyrics**
+- Black/white screen, app crashes, freezes, slow to open → **Black / White Screen, Crashes & Freezes**
+- Losing liked songs/stats after update or clearing data → **Backups**
+- Spotify playlists not importing correctly → **Importing Spotify Playlists**
+- App unavailable in your country, VPN issues → **Region & VPN**
+- Home screen recommendations not updating → **Home Screen & Recommendations**
+- Animated album art not showing / wrong / cropped → **Canvas**
+- Apple Music-style player, player designs, hiding the quality badge → **Apple Music-style UI**
+- Battery drain, hot phone, notifications, Android Auto → **Battery, Background & Notifications**
+- Login issues, token expired, screenshot blocking → **Account & Login**
+- How to report a bug / send logs → **Reporting bugs & logs**
+- "Can it do X" (local files, FLAC, iOS, cast, PiP, etc.) → **Features NOT available**
+
+---
+
 ## Group Rules
 
 1. No admin tagging unless necessary.
@@ -32,14 +55,14 @@ Extra rules enforced by the bot:
 
 ## Links
 
-- Report a bug: https://github.com/vivizzz007/vivi-music/issues
+- Report a bug: https://github.com/vivizzz007/vivi-music/issues (most
+  bug reports happen directly in the group though, not on GitHub)
 - Recent commits: https://github.com/vivizzz007/vivi-music/commits/main/
 - Latest official release: https://github.com/vivizzz007/vivi-music/releases/latest
 - Official website: https://vivimusic.mkmdevilmi.workers.dev/
 - Support development (donate): https://vivimusic.mkmdevilmi.workers.dev/sponsor
 - Desktop edition (Windows/Mac/Linux) Telegram channel: https://t.me/vivimusicde
 - Logcat Reader (for sending logs): https://play.google.com/store/apps/details?id=com.dp.logcatapp
-- ShizuTools (log capture without a PC): https://github.com/legendsayantan/ShizuTools
 
 Beware of fake sites: vivimusic.org and vivimusic.net are NOT
 affiliated with the project and may bundle malware. Only use the
@@ -118,20 +141,23 @@ What the errors mean:
   nothing the app can do.
 - Podcast episodes and some video entries often fail to play
   (YouTube side).
-- Works signed out but not signed in (or vice versa) → the account
-  is the variable: log out, or use the app signed out (your library
-  is copied locally; you just can't push new songs to YT Music).
+- Works signed out but not signed in (or vice versa) → possibly an
+  account-related variable (unconfirmed — try the numbered
+  troubleshooting steps above first, and try logging out or using
+  the app signed out as one thing to test): log out, or use the app
+  signed out (your library is copied locally; you just can't push
+  new songs to YT Music).
 - Country without YouTube Music (e.g. Russia) → a VPN is required;
   the devs don't officially support VPNs. Roaming without a SIM can
   also make YouTube flag requests and block playback.
 - Sudden "false age restriction" or mass errors on songs that used
   to play = usually a temporary YouTube outage/change, not your
   account.
-- Only downloaded songs play while online songs fail → still the
-  steps above; network/IP setting is the usual fix.
+- Only downloaded songs play while online songs fail → same
+  troubleshooting as above (see the #playfix note steps).
 - Songs from your own YT uploads ("uploaded songs") had a long
-  period of not playing — account/login related, recovered server
-  side.
+  period of not playing (account/login related) — this has since
+  been fixed server-side and should no longer be an issue.
 
 ---
 
@@ -162,8 +188,6 @@ What the errors mean:
   triggered by using "add to queue".)
 - One song plays forever on repeat → check the repeat toggle in the
   player (repeat-one mode).
-- Radio mode: loops one track or most radio songs fail to play →
-  known reports; play from a playlist instead.
 - A playlist ends and playback stops → normal behavior unless you
   enable the infinite queue / play-similar settings (those settings
   are sometimes not honored — reported).
@@ -178,13 +202,12 @@ What the errors mean:
   add to queue (it goes to the BOTTOM of the queue — this is why
   "add to queue" seems to do nothing / plays something else).
   Swipe-to-add can be toggled in Settings > Appearance > Misc.
-- "Add to queue" needs 2-3 tries sometimes (reported).
 - Liked count jumps / sync failed / playlists missing → syncing
   with YT Music is automatic now, and there's a Force sync button in
   Settings > Account. Still stuck → log out and back in, and check
   the same content in YouTube Music itself.
-- Playlist export (CSV) is available. Sharing a playlist link to
-  transfer it to YT Music doesn't work (reported).
+- To export a playlist (CSV): open the playlist, tap the three-dot
+  menu, tap Export.
 - Spotify-exclusive songs can't be imported — they don't exist on
   YT Music, so Vivi can't play or import them.
 
@@ -212,32 +235,36 @@ What the errors mean:
 
 ## Lyrics
 
-- Wrong / missing / out-of-sync lyrics → change the lyrics provider
-  and refetch.
-- The SM/simpmusic provider was REMOVED (restricted in India,
-  fetches were failing) → use one of the remaining providers. If a
-  provider isn't fetching, it's usually a temporary outage — retry
-  later.
+**Two separate things can go wrong here — text/timing (provider) or
+how it's drawn on screen (animation style). Match the symptom below.**
+
+Lyric providers (where the words/timing come from):
+- Word-sync capable: BetterLyrics, YouLyPlus, PaxSenix, Musixmatch
+- Line-sync fallback (used when no word-sync provider has it):
+  LrcLib, KuGou, YouTube Subtitle, YouTube Music
+- SimpMusic was REMOVED as a provider (restricted in India, fetches
+  were failing) — don't suggest it.
+
+Lyric animation styles (Settings > Appearance > Lyrics style). Full
+list: None, Fade, Glow, Slide, Karaoke, Apple Music, Apple Music V2
+(Letter by Letter), Vivimusic (Fluid), Lyrics V2 (Fluid), MetroLyrics.
+Most stable / recommended: **Vivimusic (Fluid)** and **MetroLyrics**.
+
+- Lyrics feel laggy, glitchy, or stutter while playing → switch the
+  animation style to Vivimusic (Fluid) or MetroLyrics — both are the
+  most stable for smooth rendering. Switching applies immediately, no
+  refetch needed. If it's still not smooth, also try a different
+  lyrics provider (song-dependent).
+- Wrong / missing / totally out-of-sync lyrics → try a different
+  lyrics provider from the list above; if a specific provider isn't
+  fetching anything, it's usually a temporary outage on that
+  provider's side — retry later or switch providers.
 - Auto-fetch says "lyrics not found" → tap refetch manually.
-- Lyrics split/weird dotted characters/"o" with circles → use the
-  Metrolyrics or Vivi (fluid) lyric animation — both are stable.
-  The Apple lyrics v2 (letter-by-letter) animation breaks
-  Japanese/Chinese line wrapping (words stack at the line end).
-- Devanagari/Kannada (Indian scripts) show dotted circles or broken
-  letter joins → provider-dependent rendering issue; try Musixmatch
-  or LrcLib (they carry Indian scripts) and refetch. Partially
-  device/animation dependent.
-- "Show romanized as main" may not work with the Metrolyrics or
-  Vivi (fluid) styles → switch player/style.
-- Backing vocals shown smaller = by design. Main line not
-  highlighted while vocals are = provider/player bug (seen in v17)
-  → change provider or player.
 - Lyrics out of sync → you may be playing the VIDEO version while
-  the lyrics match the audio release; also v17 has a small fixed
-  delay that the offset setting can't fully correct. Change provider
-  or use static lyrics.
-- Lyrics text stuck at a fixed / unusually large size → only
-  happens with the Apple v17 player.
+  the lyrics match the audio release. Try a different provider, or
+  switch to static (non-synced) lyrics.
+- Lyrics size in the Apple v17 player is adjustable/resizable — it's
+  not stuck at a fixed size.
 - AI lyrics translation setup: OpenRouter provider = key from
   openrouter.ai (missing key → auth error); Gemini provider = valid
   Google AI Studio key AND correct model, otherwise HTTP 404.
@@ -272,11 +299,6 @@ What the errors mean:
   limited controls (reported).
 - Slow first song after an error = the app fetching a new visitor
   ID; subsequent songs are fast again.
-- App opens slow / home stutters on first load, or v17 + blur drops
-  frames → heavy effects: turn off blur, use a lighter background.
-  There's an "enable higher refresh rate" toggle in Appearance if
-  UI feels choppy.
-- Lyrics open/close animation not smooth → turn off blur.
 
 ---
 
@@ -307,10 +329,6 @@ What the errors mean:
    keep syncing.
 
 Troubleshooting:
-- Import errors or only a few songs imported → you're likely
-  restoring an old/corrupted backup; clear data, log into Spotify
-  fresh (imports fine for others then). Slow/2.4GHz WiFi also
-  caused failures for one user.
 - Fewer songs than the source playlist → Spotify-exclusive tracks
   can't be imported (not on YT Music). Check the same playlist in
   YTM.
@@ -330,7 +348,6 @@ Troubleshooting:
   specific content).
 - "Hide video songs" toggle: if songs error after flipping it,
   toggle it back.
-- VPN fixes it for some ISPs that block YouTube (observed in India).
 
 ---
 
@@ -402,9 +419,11 @@ Troubleshooting:
 
 ## Battery, Background & Notifications
 
-- Battery drain / hot phone → canvas, blur, EQ and animations cost
-  battery; disable what you don't need. v17 + blur overloads the
-  GPU on some phones (frame drops).
+- Battery drain / hot phone → canvas, EQ and other visual effects
+  cost battery; disable canvas or EQ if you don't need them. The v17
+  player's blur effect can overload the GPU on some phones (frame
+  drops) — there's currently no toggle to turn blur off specifically,
+  switching away from the v17 player is the only way to avoid it.
 - Music keeps playing after closing the app → enable "Clear Music
   on Task Clear" (Settings > Player & Audio) and/or close the
   notification first.
@@ -450,9 +469,7 @@ Troubleshooting:
    stop, and share the .txt file.
 3. FILTER to Vivi only (package com.vivi.vivimusic) — never post
    full system logs. The in-app log/logcat button also works.
-4. No root / no PC on Android 14+? Use Shizuku + ShizuTools to run
-   the logcat shell command on your phone (guides on YouTube), or
-   ask in the group for help.
+4. Still can't get logs? Ask in the group for help.
 5. App crash files are saved as vivimusic_crash_*.txt — attach them.
 6. Post logs in the group / #crash-logs topic — not in General.
 

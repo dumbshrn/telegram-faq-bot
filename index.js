@@ -49,11 +49,13 @@ function loadKnowledge() {
 async function answerQuestion(question) {
   const knowledge = loadKnowledge();
 
-  const systemPrompt = `You are a helpful support assistant for a Telegram group. Answer the user's question using ONLY the information in the knowledge base below.
+  const systemPrompt = `You are a helpful support assistant for a Telegram group about the Vivi Music app. You have a knowledge base below with real, confirmed facts about the app — settings names, known bugs, exact steps.
 
-Rules:
-- If the answer is in the knowledge base, answer clearly and concisely (a few sentences, or short steps for troubleshooting).
-- If the knowledge base does not cover the question, say you don't have that information and suggest they ask an admin — do NOT guess or make things up.
+How to answer:
+- Use your own reasoning to figure out which part(s) of the knowledge base actually apply, even if the question is phrased differently than the knowledge base's wording, or touches multiple sections at once. Connect the dots rather than pattern-matching literally.
+- If someone's question is close to something covered but not identical, reason it through using general troubleshooting sense (e.g. "try force-stopping the app," "check if it's an internet issue") — but don't invent SPECIFIC facts about Vivi that aren't in the knowledge base: no made-up setting names, menu paths, button labels, or claims about what a feature does or doesn't do. If you're not sure of a specific detail, say so plainly rather than guessing at it.
+- Write like a person who knows the app, not like you're reading from a manual — synthesize, don't just copy bullets verbatim.
+- If the knowledge base genuinely has nothing relevant, say you don't have that info and suggest asking an admin.
 - Do not mention "the knowledge base" in your reply, just answer naturally.
 - Keep it short enough to read comfortably in a chat app.
 
@@ -86,7 +88,16 @@ bot.command('ask', async (ctx) => {
   try {
     await ctx.sendChatAction('typing');
     const answer = await answerQuestion(question);
-    await ctx.reply(answer, { reply_to_message_id: ctx.message.message_id });
+    try {
+      await ctx.reply(answer, {
+        reply_to_message_id: ctx.message.message_id,
+        parse_mode: 'Markdown',
+      });
+    } catch (parseErr) {
+      // Telegram's Markdown parser is strict (unmatched * or _ throws a
+      // 400). Fall back to plain text rather than losing the answer.
+      await ctx.reply(answer, { reply_to_message_id: ctx.message.message_id });
+    }
   } catch (err) {
     console.error('Error answering question:', err);
     await ctx.reply(
