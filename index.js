@@ -8,7 +8,7 @@ const Groq = require('groq-sdk');
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const KNOWLEDGE_FILE = path.join(__dirname, 'knowledge.md');
-const GROQ_MODEL = 'llama-3.3-70b-versatile'; // generous free tier, good quality for FAQ answering
+const GROQ_MODEL = 'openai/gpt-oss-120b'; // llama-3.3-70b-versatile was deprecated Aug 16, 2026
 
 if (!BOT_TOKEN || !GROQ_API_KEY) {
   console.error('Missing TELEGRAM_BOT_TOKEN or GROQ_API_KEY in .env');
