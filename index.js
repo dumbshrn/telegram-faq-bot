@@ -133,6 +133,7 @@ const SYN = {
   vpn: 'region', country: 'region', region: 'region', unavailable: 'region',
   bug: 'reporting logs', log: 'reporting logs', logcat: 'reporting logs', report: 'reporting logs',
   update: 'nightly beta', beta: 'nightly beta', apk: 'nightly install', install: 'nightly install', nightly: 'nightly beta',
+  dev: 'developer admins', developer: 'developer admins', admin: 'developer admins', owner: 'developer admins', creator: 'developer admins', author: 'developer admins', maker: 'developer admins',
   rule: 'rules', link: 'links', website: 'links', donate: 'links', sponsor: 'links', telegram: 'links',
   ios: 'ios features', flac: 'features', cast: 'features', pip: 'features', local: 'features', iphone: 'ios features', pc: 'features', tv: 'features',
   stop: 'pause volume', pause: 'pause volume',
@@ -406,6 +407,8 @@ For questions about Vivi Music: the RELEVANT KNOWLEDGE below has real, confirmed
 This is mainly a Vivi Music support group, so stay focused on it. For other questions (general knowledge, tech, phone, Android, study), you may help, but keep it brief: a few sentences, no long essays, code projects or homework. Small talk is fine; answer it briefly and warmly. If someone wants a big off-topic task, give a short pointer and say you're mainly here for Vivi Music. Be honest when you're not sure; don't make things up.
 
 Earlier messages from this conversation may be included above the latest one; use them to understand follow-ups.
+
+For general playback problems (song won't play, buffering, errors), do NOT suggest changing Region or Content Language unless the person mentions their country, region or a VPN. If asked which player design is best, recommend Apple Player.
 
 Group rules to respect: don't discuss, compare or recommend other music streaming apps (this is a Vivi-only group); keep replies clean and respectful.
 

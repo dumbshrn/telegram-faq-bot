@@ -25,6 +25,7 @@ changes take effect on the next question, no restart needed.
 - Login issues, token expired, screenshot blocking → **Account & Login**
 - How to report a bug / send logs → **Reporting bugs & logs**
 - "Can it do X" (local files, FLAC, iOS, cast, PiP, etc.) → **Features NOT available**
+- Who made the app, who are the admins → **Developer & Admins**
 
 ---
 
@@ -52,6 +53,16 @@ Extra rules enforced by the bot:
 - Flooding gets you temporarily muted by the bot.
 
 ---
+
+## Developer & Admins
+
+- The developer of Vivi Music is Vividh P Ashokan.
+- Admins of this group:
+  - Sharon: the top admin, the ultimate GOAT.
+  - CLASSIC GENIUS: another cool GOAT admin.
+  - shadowking: another GOAT admin.
+  - Ansuman: an okay admin.
+- Reminder: don't tag admins unless it's necessary (group rule 1).
 
 ## Links
 
@@ -116,9 +127,7 @@ Troubleshooting steps, in order:
 5. Clear cache; if still broken, clear app DATA from phone Settings —
    do NOT restore an old backup — and test signed out first, then
    sign your account back in.
-6. Settings > Content: set Region to "System Default"; also try
-   Default Content Language = English (US).
-7. Still broken? Capture a log (see "Reporting bugs & logs") and post
+6. Still broken? Capture a log (see "Reporting bugs & logs") and post
    it in the group — logs are what actually gets issues fixed.
 
 ### Error 2000 / IO_UNSPECIFIED / “Playback failed: unknown error”
@@ -456,6 +465,11 @@ Troubleshooting:
   an Apple design disables the newer (m3e) player design.
 - Apple Player (V1) also removes the audio quality badge if
   that's bothering you.
+- RECOMMENDATION: Apple Player is the way to go and the group's
+  pick. If someone asks which player design is best / which to use,
+  recommend Apple Player (Settings > Appearance > Player > "Apple
+  Player"). m3e is the newer design and has extras like the comments
+  button, but do NOT call m3e the best or the one to switch to.
 ### Apple Music v17 limitations
 - v17 limitations (by design / beta): no landscape/tablet layout
   (it glitches and switches orientation), no cast button, no
