@@ -26,7 +26,7 @@ changes take effect on the next question, no restart needed.
 - How to report a bug / send logs → **Reporting bugs & logs**
 - "Can it do X" (local files, FLAC, iOS, cast, PiP, etc.) → **Features NOT available**
 - Who made the app, who are the admins → **Developer & Admins**
-
+- Are we taking suggestions - Read pinned announcements we are not taking suggestions rn. the dev will implement the suggestions if needed
 ---
 
 ## Group Rules
