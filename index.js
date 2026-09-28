@@ -28,14 +28,6 @@ const groq = new Groq({ apiKey: GROQ_API_KEY, timeout: 15000, maxRetries: 0 });
 // keeps answering from the next one. NEVER add a payment method to any of these.
 const PROVIDERS = [
   ...MODELS.map((model) => ({ name: `groq/${model}`, kind: 'groq', model })),
-  ...(process.env.MISTRAL_API_KEY
-    ? [{
-        name: 'mistral', kind: 'openai',
-        url: 'https://api.mistral.ai/v1/chat/completions',
-        key: process.env.MISTRAL_API_KEY,
-        model: process.env.MISTRAL_MODEL || 'mistral-small-latest',
-      }]
-    : []),
   ...(process.env.GEMINI_API_KEY
     ? [{
         name: 'gemini', kind: 'openai',
@@ -76,6 +68,25 @@ const pending = new Map();     // key -> Promise
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const CACHE_MAX = 300;
 const cacheKey = (q) => q.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+
+// ---------- Short chat memory ----------
+// Remembers the last few exchanges per person per chat so follow-ups like
+// "and how do I do that?" make sense. Forgotten after 20 min of silence.
+const HISTORY_TURNS = 3;
+const HISTORY_TTL_MS = 20 * 60 * 1000;
+const histories = new Map(); // "chatId:userId" -> { msgs: [{role, content}], at }
+const clip = (t, n) => (t.length > n ? t.slice(0, n) + '…' : t);
+function getHistory(key) {
+  const h = histories.get(key);
+  return h && Date.now() - h.at < HISTORY_TTL_MS ? h.msgs : [];
+}
+function saveHistory(key, base, question, answer) {
+  const msgs = [...base, { role: 'user', content: clip(question, 400) }, { role: 'assistant', content: clip(answer, 500) }];
+  histories.set(key, { msgs: msgs.slice(-HISTORY_TURNS * 2), at: Date.now() });
+}
+setInterval(() => {
+  for (const [k, h] of histories) if (Date.now() - h.at > HISTORY_TTL_MS) histories.delete(k);
+}, 5 * 60 * 1000);
 
 // One question per user every 4 seconds (stops spam from clogging the queue)
 const COOLDOWN_MS = 4000;
@@ -133,7 +144,7 @@ const SYN = {
 };
 
 function stem(w) {
-  return w.length > 4 ? w.replace(/(ing|ed|es|s|e)$/, '') : w;
+  return w.length > 4 ? w.replace(/(ing|ed|es|s|e|er)$/, '') : w;
 }
 const SYN_STEMMED = {};
 for (const k of Object.keys(SYN)) SYN_STEMMED[stem(k)] = SYN[k];
@@ -243,7 +254,7 @@ async function callProvider(p, messages, maxTokens) {
     });
     return (res.choices[0].message.content || '').trim();
   }
-  // OpenAI-compatible providers (Mistral, Gemini): plain fetch, 15s timeout
+  // OpenAI-compatible providers (Gemini): plain fetch, 15s timeout
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 15000);
   try {
@@ -359,7 +370,9 @@ async function pickKnowledge(question) {
 }
 
 // ---------- Answering ----------
-async function answerQuestion(question) {
+async function answerQuestion(question, history = []) {
+  // Follow-ups depend on the conversation, so only fresh questions use the cache
+  if (history.length) return askGroq(question, history);
   const key = cacheKey(question);
   const hit = answerCache.get(key);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.answer;
@@ -376,8 +389,11 @@ async function answerQuestion(question) {
   return p;
 }
 
-async function askGroq(question) {
-  const { text: knowledge, picked, via } = await pickKnowledge(question);
+async function askGroq(question, history = []) {
+  // For follow-ups ("and then?"), route on the previous question + this one
+  const lastUser = [...history].reverse().find((m) => m.role === 'user');
+  const routingText = lastUser ? `${lastUser.content} ${question}` : question;
+  const { text: knowledge, picked, via } = await pickKnowledge(routingText);
   console.log(`Q: "${question.slice(0, 60)}" [${via}] -> ${picked.join(' | ')} (${knowledge.length} chars)`);
 
   const systemPrompt = `You are a friendly, knowledgeable assistant in a Telegram group about the Vivi Music app. You can answer any question, like a normal AI assistant.
@@ -387,7 +403,9 @@ For questions about Vivi Music: the RELEVANT KNOWLEDGE below has real, confirmed
 - If it's close to something covered but not identical, use general troubleshooting sense (force-stop the app, check the internet, etc.) but NEVER invent specific Vivi facts: no made-up setting names, menu paths, buttons, or claims about what the app can or can't do. If you're unsure of a specific detail, say so, and suggest asking an admin.
 - If the knowledge has nothing relevant to a Vivi question, say you don't have confirmed info on that.
 
-For everything else (general knowledge, tech, phone, Android, study, random questions): answer normally from your own knowledge, clearly and honestly. Say when you're not sure. Don't make things up.
+This is mainly a Vivi Music support group, so stay focused on it. For other questions (general knowledge, tech, phone, Android, study), you may help, but keep it brief: a few sentences, no long essays, code projects or homework. Small talk is fine; answer it briefly and warmly. If someone wants a big off-topic task, give a short pointer and say you're mainly here for Vivi Music. Be honest when you're not sure; don't make things up.
+
+Earlier messages from this conversation may be included above the latest one; use them to understand follow-ups.
 
 Group rules to respect: don't discuss, compare or recommend other music streaming apps (this is a Vivi-only group); keep replies clean and respectful.
 
@@ -400,6 +418,7 @@ ${knowledge}
 
   const messages = [
     { role: 'system', content: systemPrompt },
+    ...history,
     { role: 'user', content: question },
   ];
 
@@ -407,15 +426,8 @@ ${knowledge}
 }
 
 // ---------- Command handling ----------
-// Only responds to: /ask <question>
-bot.command('ask', async (ctx) => {
-  const question = ctx.message.text.replace(/^\/ask(@\w+)?\s*/i, '').trim();
-
-  if (!question) {
-    await ctx.reply('Ask something after the command, e.g.\n/ask how do I fix buffering?');
-    return;
-  }
-
+// Responds to: /ask <question>, and to replies to the bot's own messages.
+async function respond(ctx, question, repliedBotText) {
   const uid = ctx.from.id;
   const now = Date.now();
   if (now - (lastAsk.get(uid) || 0) < COOLDOWN_MS) {
@@ -426,9 +438,19 @@ bot.command('ask', async (ctx) => {
   }
   lastAsk.set(uid, now);
 
+  // Conversation so far for this person in this chat
+  const hkey = `${ctx.chat.id}:${uid}`;
+  let history = getHistory(hkey);
+  if (repliedBotText) {
+    // They replied to a specific bot message: that message is the context.
+    const known = history.some((m) => m.role === 'assistant' && m.content.slice(0, 80) === repliedBotText.slice(0, 80));
+    if (!known) history = [{ role: 'assistant', content: clip(repliedBotText, 500) }];
+  }
+
   try {
     await ctx.sendChatAction('typing');
-    const answer = await limited(() => answerQuestion(question));
+    const answer = await limited(() => answerQuestion(question, history));
+    saveHistory(hkey, history, question, answer);
     try {
       await ctx.reply(answer, {
         reply_to_message_id: ctx.message.message_id,
@@ -446,6 +468,29 @@ bot.command('ask', async (ctx) => {
       { reply_to_message_id: ctx.message.message_id }
     );
   }
+}
+
+bot.command('ask', async (ctx) => {
+  const question = ctx.message.text.replace(/^\/ask(@\w+)?\s*/i, '').trim();
+  if (!question) {
+    await ctx.reply('Ask something after the command, e.g.\n/ask how do I fix buffering?');
+    return;
+  }
+  // /ask sent as a reply to one of the bot's messages keeps that context too
+  const replied = ctx.message.reply_to_message;
+  const botId = (ctx.botInfo || bot.botInfo || {}).id;
+  const repliedBotText = replied && replied.from && replied.from.id === botId ? replied.text || '' : '';
+  await respond(ctx, question, repliedBotText);
+});
+
+// Someone replies to a bot message (no /ask needed) -> treat it as a follow-up
+bot.on('text', async (ctx) => {
+  const replied = ctx.message.reply_to_message;
+  const botId = (ctx.botInfo || bot.botInfo || {}).id;
+  if (!replied || !replied.from || replied.from.id !== botId) return;
+  const question = ctx.message.text.trim();
+  if (!question || question.startsWith('/')) return;
+  await respond(ctx, question, replied.text || '');
 });
 
 bot.catch((err) => console.error('Bot error:', err));
