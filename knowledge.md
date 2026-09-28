@@ -58,10 +58,10 @@ Extra rules enforced by the bot:
 
 - The developer of Vivi Music is Vividh P Ashokan.
 - Admins of this group:
-  - Sharon: the ultimate GOAT.
-  - CLASSIC GENIUS: another cool GOAT admin.
-  - shadowking: another GOAT admin.
-  - Ansuman: an okay admin.
+  - Sharon
+  - CLASSIC GENIUS
+  - Shadowking
+  - Ansuman
 - Reminder: don't tag admins unless it's necessary (group rule 1).
 
 ## Links
