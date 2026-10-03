@@ -428,6 +428,36 @@ ${knowledge}
   return await llmChat(messages, 900); // reasoning + answer; modest for per-minute token limits
 }
 
+// ---------- Telegram formatting ----------
+// The model writes GitHub-style Markdown (**bold**, | tables |). Telegram's
+// legacy "Markdown" parse_mode only understands *single-star* bold and has
+// no table support at all, so sending the raw text shows literal stars and
+// broken pipe rows. This converts the model's output into something
+// Telegram can actually render before we send it.
+function toTelegramMarkdown(text) {
+  let out = text;
+
+  // Markdown tables -> a plain "Label: value" list (Telegram has no tables)
+  out = out.replace(/((?:^\|.*\|[ \t]*\n?)+)/gm, (block) => {
+    const rows = block.trim().split('\n').map((r) =>
+      r.replace(/^\||\|$/g, '').split('|').map((c) => c.trim())
+    );
+    if (rows.length < 2 || !rows[1].every((c) => /^:?-+:?$/.test(c))) return block; // not a real table
+    const header = rows[0];
+    const body = rows.slice(2);
+    return body
+      .map((row) => row.map((cell, i) => (header[i] ? `*${header[i]}:* ${cell}` : cell)).join('\n'))
+      .join('\n\n') + '\n';
+  });
+
+  // **bold** / __bold__ -> *bold* (Telegram legacy single-star bold)
+  out = out.replace(/\*\*(.+?)\*\*/g, '*$1*').replace(/__(.+?)__/g, '*$1*');
+  // Headings (model sometimes adds ## Heading) -> bold line
+  out = out.replace(/^#{1,6}\s*(.+)$/gm, '*$1*');
+
+  return out.trim();
+}
+
 // ---------- Command handling ----------
 // Responds to: /ask <question>, and to replies to the bot's own messages.
 async function respond(ctx, question, repliedBotText) {
@@ -455,7 +485,7 @@ async function respond(ctx, question, repliedBotText) {
     const answer = await limited(() => answerQuestion(question, history));
     saveHistory(hkey, history, question, answer);
     try {
-      await ctx.reply(answer, {
+      await ctx.reply(toTelegramMarkdown(answer), {
         reply_to_message_id: ctx.message.message_id,
         parse_mode: 'Markdown',
       });

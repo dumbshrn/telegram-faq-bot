@@ -26,8 +26,7 @@ changes take effect on the next question, no restart needed.
 - How to report a bug / send logs → **Reporting bugs & logs**
 - "Can it do X" (local files, FLAC, iOS, cast, PiP, etc.) → **Features NOT available**
 - Who made the app, who are the admins → **Developer & Admins**
-- Are we taking suggestions - Read pinned announcements we are not taking suggestions rn. the dev will implement the suggestions if needed
-- Android Auto - App is not from playstore it's a foss /open source app go to Android auto build no 7 times developer option turns on enable unknown sources to see the app in android auto
+
 ---
 
 ## Group Rules
@@ -50,7 +49,8 @@ Extra rules enforced by the bot:
 - Only Vivi-related topics here — discussing other music apps earns
   a warning; don't post crash logs outside #crash-logs.
 - Feature requests / suggestions are currently CLOSED (see pinned
-  message in General). Bug reports are still welcome.
+  message in General). The dev will implement suggestions from the
+  pinned list if/when needed. Bug reports are still welcome.
 - Flooding gets you temporarily muted by the bot.
 
 ---
@@ -518,6 +518,10 @@ Troubleshooting:
   turn off download notifications if it bothers you. The "pay to
   update" prompt is an easter egg — updates are free.
 ### Android Auto problems
+- Vivi is NOT on the Play Store (it's FOSS/open-source), so it won't show
+  up in Android Auto until you allow unknown sources: open Android Auto's
+  own settings, tap the build number 7 times to unlock developer options
+  in Android Auto, then turn on "Unknown sources".
 - Android Auto is supported; if it fails, disconnect any Cast
   session first (leftover cast mode breaks it). "Source Error" on AA
   → report with logs. Lyrics are not shown on Android Auto.
