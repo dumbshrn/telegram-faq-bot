@@ -27,6 +27,7 @@ changes take effect on the next question, no restart needed.
 - "Can it do X" (local files, FLAC, iOS, cast, PiP, etc.) → **Features NOT available**
 - Who made the app, who are the admins → **Developer & Admins**
 - Are we taking suggestions - Read pinned announcements we are not taking suggestions rn. the dev will implement the suggestions if needed
+- Android Auto - App is not from playstore it's a foss /open source app go to Android auto build no 7 times developer option turns on enable unknown sources to see the app in android auto
 ---
 
 ## Group Rules
